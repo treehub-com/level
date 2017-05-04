@@ -43,9 +43,9 @@ describe('Level', () => {
     expect(obj).to.deep.equal({foo: 'bar'});
   });
 
-  it('should resolve to null when not found', async () => {
+  it('should resolve to undefined when not found', async () => {
     const test = await level.get('test');
-    expect(test).to.equal(null);
+    expect(test).to.equal(undefined);
   });
 
   it('should delete keys', async () => {
@@ -55,7 +55,7 @@ describe('Level', () => {
 
     await level.del('test');
     test = await level.get('test');
-    expect(test).to.equal(null);
+    expect(test).to.equal(undefined);
   });
 
   it('should batch edit', async () => {

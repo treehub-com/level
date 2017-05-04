@@ -91,7 +91,7 @@ class Level {
       this.db.get(key, (error, value) => {
         if (error) {
           if ((/notfound/i).test(error)) {
-            resolve(null);
+            resolve();
           } else {
             reject(error);
           }
