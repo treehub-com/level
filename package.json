@@ -1,0 +1,28 @@
+{
+  "name": "@treehub/level",
+  "version": "0.0.0",
+  "description": "LevelDown Compatible Wrapper",
+  "main": "Level.js",
+  "scripts": {
+    "test": "mocha \"*.test.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/treehub-com/level.git"
+  },
+  "keywords": [],
+  "author": "John Clark <socrates37@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/treehub-com/level/issues"
+  },
+  "homepage": "https://github.com/treehub-com/level#readme",
+  "devDependencies": {
+    "chai": "3.5.0",
+    "eslint": "3.19.0",
+    "eslint-config-google": "0.7.1",
+    "memdown": "1.2.4",
+    "mocha": "3.3.0",
+    "uuid": "3.0.1"
+  }
+}
