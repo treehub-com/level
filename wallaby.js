@@ -1,10 +1,10 @@
 module.exports = {
   files: [
-    'Level.js',
-    {pattern: 'Level.test.js', ignore: true},
+    'src/*.js',
+    {pattern: 'src/*.test.js', ignore: true},
   ],
   tests: [
-    'Level.test.js',
+    'src/*.test.js',
   ],
   testFramework: 'mocha',
   env: {

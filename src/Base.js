@@ -1,8 +1,8 @@
 /**
  * A Promise-based wrapper for LevelDOWN compatible constructors
- * @type {Level}
+ * @type {Base}
  */
-class Level {
+class Base {
   /**
    * Construct Level
    *
@@ -284,4 +284,4 @@ class Level {
   }
 }
 
-module.exports = Level;
+module.exports = Base;

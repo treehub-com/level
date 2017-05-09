@@ -1,10 +1,10 @@
 {
   "name": "@treehub/level",
   "version": "0.1.0",
-  "description": "LevelDown Compatible Wrapper",
-  "main": "Level.js",
+  "description": "Syncable Promise Based LevelDown Wrapper",
+  "main": "src/Level.js",
   "scripts": {
-    "test": "mocha \"*.test.js\""
+    "test": "mocha \"src/*.test.js\""
   },
   "repository": {
     "type": "git",

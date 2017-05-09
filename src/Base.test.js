@@ -6,7 +6,7 @@ const Level = require('./Level.js');
 
 let level;
 
-describe('Level', () => {
+describe('Base', () => {
   beforeEach(async () => {
     level = new Level({name: uuid(), backend: Memdown});
     await level.open();
