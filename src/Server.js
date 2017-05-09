@@ -17,6 +17,7 @@ class Server {
     this.base = new Base({name, backend});
     this.prefix = prefix;
     this._CID = null;
+    this._locked = false;
   }
 
   /**
@@ -75,32 +76,41 @@ class Server {
    * @param  {Object} array An array of changes
    */
   async batch(array) {
-    const changes = [];
-
-    for (let i = 1; i <= array.length; i++) {
-      const elem = array[i-1];
-      changes.push(elem);
-      if (elem.type === 'put') {
-        changes.push({
-          type: 'put',
-          key: `${this.prefix}${this._CID + i}`,
-          value: [elem.key, elem.value],
-        });
-      } else {
-        changes.push({
-          type: 'put',
-          key: `${this.prefix}${this._CID + i}`,
-          value: [elem.key],
-        });
-      }
+    if (this._locked) {
+      throw new Error('Locked');
     }
-    changes.push({
-      type: 'put',
-      key: this.prefix,
-      value: this._CID + array.length,
-    });
-    await this.base.batch(changes);
-    this._CID += array.length;
+    this._locked = true;
+
+    try {
+      const changes = [];
+
+      for (let i = 1; i <= array.length; i++) {
+        const elem = array[i-1];
+        changes.push(elem);
+        if (elem.type === 'put') {
+          changes.push({
+            type: 'put',
+            key: `${this.prefix}${this._CID + i}`,
+            value: [elem.key, elem.value],
+          });
+        } else {
+          changes.push({
+            type: 'put',
+            key: `${this.prefix}${this._CID + i}`,
+            value: [elem.key],
+          });
+        }
+      }
+      changes.push({
+        type: 'put',
+        key: this.prefix,
+        value: this._CID + array.length,
+      });
+      await this.base.batch(changes);
+      this._CID += array.length;
+    } finally {
+      this._locked = false;
+    }
   }
 
   /**
@@ -153,7 +163,7 @@ class Server {
    */
   async changes(CID, limit = 100) {
     // NOTE: We get keys and values to guard against missing CIDs
-    // (which shoule never happen, but...)
+    // (which should never happen, but...)
     const data = await this.base.query({
       gt: `${this.prefix}${CID}`,
       lt: `${this.prefix}\uffff`,
@@ -179,35 +189,43 @@ class Server {
    * @return {Promise<Int>}
    */
   async change(CID, array) {
-    if (this._CID !== CID) {
-      throw new Error('CID Mismatch');
+    if (this._locked) {
+      throw new Error('Locked');
     }
-    const changes = [];
-    changes.push({
-      type: 'put',
-      key: `${this.prefix}`,
-      value: this._CID + array.length,
-    });
-
-    for (let i = 1; i <= array.length; i++) {
-      const elem = array[i-1];
-      changes.push(elem);
-      if (elem.type === 'put') {
-        changes.push({
-          type: 'put',
-          key: `${this.prefix}${this._CID + i}`,
-          value: [elem.key, elem.value],
-        });
-      } else {
-        changes.push({
-          type: 'put',
-          key: `${this.prefix}${this._CID + i}`,
-          value: [elem.key],
-        });
+    this._locked = true;
+    try {
+      if (this._CID !== CID) {
+        throw new Error('CID Mismatch');
       }
+      const changes = [];
+      changes.push({
+        type: 'put',
+        key: `${this.prefix}`,
+        value: this._CID + array.length,
+      });
+
+      for (let i = 1; i <= array.length; i++) {
+        const elem = array[i-1];
+        changes.push(elem);
+        if (elem.type === 'put') {
+          changes.push({
+            type: 'put',
+            key: `${this.prefix}${this._CID + i}`,
+            value: [elem.key, elem.value],
+          });
+        } else {
+          changes.push({
+            type: 'put',
+            key: `${this.prefix}${this._CID + i}`,
+            value: [elem.key],
+          });
+        }
+      }
+      await this.base.batch(changes);
+      this._CID += array.length;
+    } finally {
+      this._locked = false;
     }
-    await this.base.batch(changes);
-    this._CID += array.length;
     return this._CID;
   }
 }
