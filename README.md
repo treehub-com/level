@@ -66,11 +66,11 @@ Perform some changes on the server and client
 
 const serverChanges = await server.changes(client.CID);
 ...
-await client.apply(serverChanges);
+await client.apply(serverChanges.cid, serverChanges.changes);
 const clientChanges = await client.dirty();
 const clientKeys = [];
 for (const change of clientChanges) {
-  clientKeys.push(change.key);
+  clientKeys.push(change[0]);
 }
 ...
 const serverCID = await server.change(client.CID, clientChanges);
