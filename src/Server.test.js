@@ -158,9 +158,9 @@ describe('Server', () => {
 
   it('should record changes and set cid', async () => {
     const cid = await level.change(0, [
-      {type: 'put', key: 'a', value: '1'},
-      {type: 'put', key: 'b', value: '2'},
-      {type: 'del', key: 'c'},
+      ['a', '1'],
+      ['b', '2'],
+      ['c'],
     ]);
 
     expect(cid).to.equal(3);

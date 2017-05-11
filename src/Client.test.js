@@ -106,14 +106,14 @@ describe('Client', () => {
     await level.put('b', '2');
     await level.del('c');
 
-    await level.apply({cid: 123, changes: [
+    await level.apply(123, [
       ['b'],
       ['c', true],
-    ]});
+    ]);
 
     const dirty = await level.dirty();
     expect(dirty).to.deep.equal([
-      {type: 'put', key: 'a', value: '1'},
+      ['a', '1'],
     ]);
 
     const b = await level.get('b');
@@ -135,14 +135,14 @@ describe('Client', () => {
 
     let dirty = await level.dirty();
     expect(dirty).to.deep.equal([
-      {type: 'put', key: 'a', value: '1'},
-      {type: 'put', key: 'b', value: '2'},
-      {type: 'del', key: 'c'},
+      ['a', '1'],
+      ['b', '2'],
+      ['c'],
     ]);
 
     dirty = await level.dirty(1);
     expect(dirty).to.deep.equal([
-      {type: 'put', key: 'a', value: '1'},
+      ['a', '1'],
     ]);
   });
 

@@ -137,16 +137,17 @@ class Client {
   }
 
   /**
-   * Apply server changes to the client
+   * Apply server changes to the client and update the CID
    *
-   * @param  {Object} changes The changes from the server ({cid, changes})
-   * @return {Promise}
+   * @param  {Int} CID The last CID in the set of changes
+   * @param  {Object} changes The changes from the server
+   * @return {Promise<Int>} The new CID
    */
-  async apply({cid, changes}) {
+  async apply(CID, changes) {
     const batch = [{
       type: 'put',
       key: this.prefix,
-      value: cid,
+      value: CID,
     }];
 
     for (const change of changes) {
@@ -169,39 +170,22 @@ class Client {
     }
 
     await this.base.batch(batch);
-    this._CID = cid;
+    this._CID = CID;
+    return CID;
   }
 
   /**
-   * Get a list of dirty data
+   * Get a list of changes from the client
    *
-   * Returns an array of type/key/[value] objects
-   *
-   * @param  {Number}  [limit=100] The limit
-   * @return {Promise<Array>}
+   * @param  {Int}  [limit=100] The limit
+   * @return {Promise<Array>} The changes
    */
   async dirty(limit = 100) {
-    const values = await this.base.values({
+    return this.base.values({
       gt: this.prefix,
       lt: `${this.prefix}\uffff`,
       limit,
     });
-    const data = [];
-    for (const value of values) {
-      if (value.length === 1) {
-        data.push({
-          type: 'del',
-          key: value[0],
-        });
-      } else {
-        data.push({
-          type: 'put',
-          key: value[0],
-          value: value[1],
-        });
-      }
-    }
-    return data;
   }
 
   /**
@@ -209,6 +193,7 @@ class Client {
    *
    * @param  {Int} CID The new CID
    * @param  {Array<String>} keys The clean keys
+   * @return {Promise<Int>} The new CID
    */
   async clean(CID, keys) {
     const changes = [];
@@ -227,6 +212,7 @@ class Client {
 
     await this.base.batch(changes);
     this._CID = CID;
+    return CID;
   }
 
 }

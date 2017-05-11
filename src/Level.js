@@ -166,25 +166,24 @@ class Level {
   }
 
   /**
-   * Apply server changes to the client
+   * Apply server changes to the client and update the CID
    *
-   * @param  {Object} changes The changes from the server ({cid, changes})
-   * @return {Promise}
+   * @param  {Int} CID The last CID in the set of changes
+   * @param  {Object} changes The changes from the server
+   * @return {Promise<Int>} The new CID
    */
-  async apply(changes) {
+  async apply(CID, changes) {
     if (this.mode !== Level.CLIENT) {
       throw new Error('Only Allowed in Client Mode');
     }
-    return this.level.apply(changes);
+    return this.level.apply(CID, changes);
   }
 
   /**
-   * Get a list of dirty data
+   * Get a list of changes from the client
    *
-   * Returns an array of type/key/[value] objects
-   *
-   * @param  {Number}  [limit=100] The limit
-   * @return {Promise<Array>}
+   * @param  {Int}  [limit=100] The limit
+   * @return {Promise<Array>} The changes
    */
   async dirty(limit = 100) {
     if (this.mode !== Level.CLIENT) {
@@ -198,7 +197,7 @@ class Level {
    *
    * @param  {Int} CID The new CID
    * @param  {Array<String>} keys The clean keys
-   * @return {Promise}
+   * @return {Promise<Int>} The new CID
    */
   async clean(CID, keys) {
     if (this.mode !== Level.CLIENT) {
@@ -208,11 +207,11 @@ class Level {
   }
 
   /**
-   * Get changes AFTER CID
+   * Get changes from the server AFTER CID
    *
    * @param  {Int} CID The CID to start after
-   * @param  {Number} [limit=100] The limit
-   * @return {Array<Object>}
+   * @param  {Int} [limit=100] The limit
+   * @return {Promise<Object>} The cid and the changes ){cid, changes}
    */
   async changes(CID, limit = 100) {
     if (this.mode !== Level.SERVER) {
@@ -225,14 +224,14 @@ class Level {
    * Apply changes on the server and return the new CID
    *
    * @param  {Int} CID The current CID
-   * @param  {Array<Object>} array Array of type/key/[value] objects
-   * @return {Promise<Int>}
+   * @param  {Array} changes The changes
+   * @return {Promise<Int>} The new CID
    */
-  async change(CID, array) {
+  async change(CID, changes) {
     if (this.mode !== Level.SERVER) {
       throw new Error('Only Allowed in Server Mode');
     }
-    return this.level.change(CID, array);
+    return this.level.change(CID, changes);
   }
 }
 

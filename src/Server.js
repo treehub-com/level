@@ -153,13 +153,11 @@ class Server {
   }
 
   /**
-   * Get changes AFTER CID
-   *
-   * Returns an object with cid/changes
+   * Get changes from the server AFTER CID
    *
    * @param  {Int} CID The CID to start after
-   * @param  {Number} [limit=100] The limit
-   * @return {Object}
+   * @param  {Int} [limit=100] The limit
+   * @return {Promise<Object>} The cid and the changes ){cid, changes}
    */
   async changes(CID, limit = 100) {
     // NOTE: We get keys and values to guard against missing CIDs
@@ -185,10 +183,10 @@ class Server {
    * Apply changes on the server and return the new CID
    *
    * @param  {Int} CID The current CID
-   * @param  {Array<Object>} array Array of type/key/[value] objects
-   * @return {Promise<Int>}
+   * @param  {Array} changes The changes
+   * @return {Promise<Int>} The new CID
    */
-  async change(CID, array) {
+  async change(CID, changes) {
     if (this._locked) {
       throw new Error('Locked');
     }
@@ -197,32 +195,40 @@ class Server {
       if (this._CID !== CID) {
         throw new Error('CID Mismatch');
       }
-      const changes = [];
-      changes.push({
+      const batch = [];
+      batch.push({
         type: 'put',
         key: `${this.prefix}`,
-        value: this._CID + array.length,
+        value: this._CID + changes.length,
       });
 
-      for (let i = 1; i <= array.length; i++) {
-        const elem = array[i-1];
-        changes.push(elem);
-        if (elem.type === 'put') {
-          changes.push({
+      for (let i = 1; i <= changes.length; i++) {
+        const change = changes[i-1];
+        if (change.length === 2) {
+          batch.push({
+            type: 'put',
+            key: change[0],
+            value: change[1],
+          });
+          batch.push({
             type: 'put',
             key: `${this.prefix}${this._CID + i}`,
-            value: [elem.key, elem.value],
+            value: change,
           });
         } else {
-          changes.push({
+          batch.push({
+            type: 'del',
+            key: change[0],
+          });
+          batch.push({
             type: 'put',
             key: `${this.prefix}${this._CID + i}`,
-            value: [elem.key],
+            value: change,
           });
         }
       }
-      await this.base.batch(changes);
-      this._CID += array.length;
+      await this.base.batch(batch);
+      this._CID += changes.length;
     } finally {
       this._locked = false;
     }
